@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Optimal Pathing System</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+h2, h3 {
+  color: #333;
+  padding: 20px;
+  text-align: center;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.upload-section {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.file-label {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 10px;
+}
+
+.file-label:hover {
+  background-color: #45a049;
+}
+
+button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 10px;
+}
+
+button:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.instructions {
+  background: #e3f2fd;
+  padding: 15px;
+  border-radius: 4px;
+  margin: 20px 0;
+  border-left: 4px solid #2196F3;
+}
+
+.instructions h4 {
+  margin-top: 0;
+  color: #1976D2;
+}
+
+.instructions ol {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.image-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.image-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.image-wrapper {
+  text-align: center;
+  position: relative;
+}
+
+.image-wrapper h4 {
+  margin: 0 0 10px 0;
+  color: #555;
+}
+
+.canvas-container {
+  position: relative;
+  display: inline-block;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  background: #fafafa;
+}
+
+canvas {
+  display: block;
+  cursor: crosshair;
+  max-width: 100%;
+  height: auto;
+}
+
+.coordinates-display {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.point-marker {
+  font-size: 12px;
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 3px;
+  display: inline-block;
+  margin: 5px;
+}
+
+.start-marker {
+  background: #4CAF50;
+  color: white;
+}
+
+.end-marker {
+  background: #f44336;
+  color: white;
+}
+
+.status-message {
+  padding: 15px;
+  border-radius: 4px;
+  margin: 20px 0;
+  display: none;
+}
+
+.status-message.info {
+  background: #e3f2fd;
+  border-left: 4px solid #2196F3;
+  color: #1976D2;
+  display: block;
+}
+
+.status-message.success {
+  background: #e8f5e9;
+  border-left: 4px solid #4CAF50;
+  color: #2e7d32;
+  display: block;
+}
+
+.status-message.error {
+  background: #ffebee;
+  border-left: 4px solid #f44336;
+  color: #c62828;
+  display: block;
+}
+
+.loading {
+  display: none;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #4CAF50;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.path-info {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  display: none;
+}
+
+.path-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.stat-card {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 4px;
+  border-left: 4px solid #4CAF50;
+}
+
+.stat-card h5 {
+  margin: 0 0 5px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.stat-card .value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+.legend {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 4px;
+  margin-top: 15px;
+  display: inline-block;
+}
+
+.legend-item {
+  display: inline-block;
+  margin-right: 20px;
+}
+
+.legend-color {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Optimal Pathing System</h2>
+
+  <div class="upload-section">
+    <label for="image-file" class="file-label">Choose Image</label>
+    <input type="file" id="image-file" accept="image/*" onchange="handleFileSelect()">
+    <div id="file-name" style="margin-top: 10px; color: #666;"></div>
+  </div>
+
+  <div class="instructions">
+    <h4>How to Use:</h4>
+    <ol>
+      <li>Upload an image using the "Choose Image" button above</li>
+      <li>Click on the image to set the <strong style="color: #4CAF50;">START point</strong> (green marker)</li>
+      <li>Click again to set the <strong style="color: #f44336;">END point</strong> (red marker)</li>
+      <li>Click "Find Optimal Path" to compute the shortest path</li>
+      <li>The path will be displayed in cyan on the result image</li>
+    </ol>
+    <p><strong>Note:</strong> You can reset points by clicking "Reset Points" and selecting new locations.</p>
+  </div>
+
+  <div id="status-message" class="status-message"></div>
+
+  <div class="image-section">
+    <div style="text-align: center; margin-bottom: 20px;">
+      <button id="reset-btn" onclick="resetPoints()" disabled>Reset Points</button>
+      <button id="process-btn" onclick="processImage()" disabled>Find Optimal Path</button>
+    </div>
+
+    <div class="image-container">
+      <div class="image-wrapper">
+        <h4>Original Image - Click to Select Points</h4>
+        <div class="canvas-container">
+          <canvas id="input-canvas"></canvas>
+        </div>
+        <div class="coordinates-display" id="coordinates-display">
+          <div>Click on image to select start and end points</div>
+        </div>
+      </div>
+
+      <div class="image-wrapper" id="result-wrapper" style="display: none;">
+        <h4>Optimal Path Result</h4>
+        <div class="canvas-container">
+          <canvas id="result-canvas"></canvas>
+        </div>
+        <div class="legend">
+          <div class="legend-item">
+            <span class="legend-color" style="background: #4CAF50;"></span>
+            <span>Start Point</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: #f44336;"></span>
+            <span>End Point</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: cyan;"></span>
+            <span>Optimal Path</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Computing optimal path...</p>
+  </div>
+
+  <div class="path-info" id="path-info">
+    <h3 style="margin-top: 0;">Path Statistics</h3>
+    <div class="path-stats">
+      <div class="stat-card">
+        <h5>Path Length</h5>
+        <div class="value" id="path-length">0</div>
+        <small>pixels</small>
+      </div>
+      <div class="stat-card">
+        <h5>Computation Time</h5>
+        <div class="value" id="comp-time">0</div>
+        <small>seconds</small>
+      </div>
+      <div class="stat-card">
+        <h5>Start Position</h5>
+        <div class="value" id="start-pos" style="font-size: 18px;">-</div>
+      </div>
+      <div class="stat-card">
+        <h5>End Position</h5>
+        <div class="value" id="end-pos" style="font-size: 18px;">-</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let originalImage = null;
+let startPoint = null;
+let endPoint = null;
+let imageData = null;
+
+function handleFileSelect() {
+  const fileInput = document.getElementById('image-file');
+  const file = fileInput.files[0];
+
+  if (!file) return;
+
+  document.getElementById('file-name').textContent = `Selected: ${file.name}`;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      originalImage = img;
+      displayImageOnCanvas(img);
+      resetPoints();
+      showStatus('Image loaded! Click on the image to select start and end points.', 'info');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function displayImageOnCanvas(img) {
+  const canvas = document.getElementById('input-canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Set canvas size to match image
+  canvas.width = img.width;
+  canvas.height = img.height;
+
+  // Draw image
+  ctx.drawImage(img, 0, 0);
+
+  // Store image data
+  imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+  // Enable canvas clicking
+  canvas.onclick = handleCanvasClick;
+}
+
+function handleCanvasClick(event) {
+  const canvas = document.getElementById('input-canvas');
+  const rect = canvas.getBoundingClientRect();
+
+  // Calculate actual pixel coordinates accounting for canvas scaling
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+
+  const x = Math.floor((event.clientX - rect.left) * scaleX);
+  const y = Math.floor((event.clientY - rect.top) * scaleY);
+
+  if (!startPoint) {
+    startPoint = { x, y };
+    drawMarker(x, y, '#4CAF50', 'S');
+    updateCoordinatesDisplay();
+    showStatus('Start point selected! Now click to select the end point.', 'info');
+  } else if (!endPoint) {
+    endPoint = { x, y };
+    drawMarker(x, y, '#f44336', 'E');
+    updateCoordinatesDisplay();
+    document.getElementById('process-btn').disabled = false;
+    showStatus('Both points selected! Click "Find Optimal Path" to compute.', 'success');
+  }
+}
+
+function drawMarker(x, y, color, label) {
+  const canvas = document.getElementById('input-canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Draw circle
+  ctx.beginPath();
+  ctx.arc(x, y, 8, 0, 2 * Math.PI);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Draw label
+  ctx.fillStyle = 'white';
+  ctx.font = 'bold 12px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x, y);
+}
+
+function updateCoordinatesDisplay() {
+  const display = document.getElementById('coordinates-display');
+  let html = '';
+
+  if (startPoint) {
+    html += `<div class="point-marker start-marker">START: (${startPoint.y}, ${startPoint.x})</div>`;
+  }
+  if (endPoint) {
+    html += `<div class="point-marker end-marker">END: (${endPoint.y}, ${endPoint.x})</div>`;
+  }
+
+  display.innerHTML = html || '<div>Click on image to select start and end points</div>';
+}
+
+function resetPoints() {
+  startPoint = null;
+  endPoint = null;
+
+  if (originalImage) {
+    displayImageOnCanvas(originalImage);
+    document.getElementById('reset-btn').disabled = false;
+  }
+
+  document.getElementById('process-btn').disabled = true;
+  document.getElementById('result-wrapper').style.display = 'none';
+  document.getElementById('path-info').style.display = 'none';
+  updateCoordinatesDisplay();
+  showStatus('Points reset. Click on the image to select new start and end points.', 'info');
+}
+
+async function processImage() {
+  if (!startPoint || !endPoint || !originalImage) {
+    showStatus('Please select both start and end points first!', 'error');
+    return;
+  }
+
+  // Show loading
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('process-btn').disabled = true;
+  showStatus('Processing image and computing optimal path...', 'info');
+
+  try {
+    const startTime = performance.now();
+
+    // Step 1: Get the segmentation mask from your backend
+    const blob = await imageToBlob(originalImage);
+    const formData = new FormData();
+    formData.append('file', blob, 'image.png');
+
+    showStatus('Segmenting image...', 'info');
+    const segResponse = await fetch('http://localhost:8000/segment', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!segResponse.ok) {
+      throw new Error('Segmentation failed');
+    }
+
+    const segBlob = await segResponse.blob();
+    const segImage = await blobToImage(segBlob);
+
+    // Step 2: Convert segmented image to grayscale array for pathfinding
+    const grayArray = imageToGrayscaleArray(segImage);
+
+    // Step 3: Call pathfinding backend
+    showStatus('Computing optimal path...', 'info');
+    const pathResponse = await fetch('http://localhost:8000/find_path', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        image_array: grayArray,
+        start_pixel: [startPoint.y, startPoint.x],  // Note: row, col format
+        target_pixel: [endPoint.y, endPoint.x]
+      })
+    });
+
+    if (!pathResponse.ok) {
+      throw new Error('Pathfinding failed');
+    }
+
+    const pathData = await pathResponse.json();
+    const computeTime = ((performance.now() - startTime) / 1000).toFixed(2);
+
+    // Step 4: Display result
+    displayPathResult(pathData.path, computeTime);
+
+    showStatus('Optimal path computed successfully!', 'success');
+
+  } catch (error) {
+    console.error('Error:', error);
+    showStatus(`Error: ${error.message}. Make sure your backend is running.`, 'error');
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('process-btn').disabled = false;
+  }
+}
+
+function imageToGrayscaleArray(img) {
+  const canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+
+  // Convert to 2D grayscale array
+  const grayArray = [];
+  for (let y = 0; y < canvas.height; y++) {
+    const row = [];
+    for (let x = 0; x < canvas.width; x++) {
+      const idx = (y * canvas.width + x) * 4;
+      // Invert: 255 - value (matching your Python code: 255 - img_array * 255)
+      const gray = 255 - data[idx]; // Use red channel (grayscale image)
+      row.push(gray);
+    }
+    grayArray.push(row);
+  }
+
+  return grayArray;
+}
+
+function displayPathResult(path, computeTime) {
+  const canvas = document.getElementById('result-canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Set canvas size
+  canvas.width = originalImage.width;
+  canvas.height = originalImage.height;
+
+  // Draw original image
+  ctx.drawImage(originalImage, 0, 0);
+
+  // Draw path in cyan
+  if (path && path.length > 0) {
+    ctx.strokeStyle = 'cyan';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+
+    // Path comes as [[row, col], [row, col], ...]
+    ctx.moveTo(path[0][1], path[0][0]); // col, row -> x, y
+
+    for (let i = 1; i < path.length; i++) {
+      ctx.lineTo(path[i][1], path[i][0]);
+    }
+
+    ctx.stroke();
+
+    // Draw start and end markers
+    ctx.beginPath();
+    ctx.arc(startPoint.x, startPoint.y, 8, 0, 2 * Math.PI);
+    ctx.fillStyle = '#4CAF50';
+    ctx.fill();
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(endPoint.x, endPoint.y, 8, 0, 2 * Math.PI);
+    ctx.fillStyle = '#f44336';
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  // Show result section
+  document.getElementById('result-wrapper').style.display = 'block';
+  document.getElementById('path-info').style.display = 'block';
+
+  // Update statistics
+  document.getElementById('path-length').textContent = path.length;
+  document.getElementById('comp-time').textContent = computeTime;
+  document.getElementById('start-pos').textContent = `(${startPoint.y}, ${startPoint.x})`;
+  document.getElementById('end-pos').textContent = `(${endPoint.y}, ${endPoint.x})`;
+
+  // Scroll to result
+  document.getElementById('result-wrapper').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function imageToBlob(img) {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    canvas.toBlob(resolve);
+  });
+}
+
+function blobToImage(blob) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.src = URL.createObjectURL(blob);
+  });
+}
+
+function showStatus(message, type) {
+  const statusEl = document.getElementById('status-message');
+  statusEl.textContent = message;
+  statusEl.className = `status-message ${type}`;
+}
+</script>
+
+</body>
+</html>

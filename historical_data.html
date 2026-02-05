@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Historical Meteorological Data</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+
+    h1, h2 {
+      color: #006400;
+    }
+
+    form {
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 70%;
+      margin-right: 10px;
+    }
+
+    button {
+      padding: 10px;
+      background-color: #32CD32;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #228B22;
+    }
+
+    #report {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .chart-card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+
+    .chart-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .chart-card h2 {
+      margin-top: 0;
+      color: #006400;
+    }
+
+    .chart-card::after {
+      content: "Click to expand";
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(50, 205, 50, 0.1);
+      color: #006400;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 11px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .chart-card:hover::after {
+      opacity: 1;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+    }
+
+    canvas {
+      width: 100%;
+    }
+
+    /* Fullscreen Modal */
+    .fullscreen-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      padding: 40px;
+    }
+
+    .fullscreen-modal.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fullscreen-content {
+      background: white;
+      border-radius: 8px;
+      padding: 30px;
+      max-width: 1200px;
+      width: 100%;
+      max-height: 90vh;
+      position: relative;
+    }
+
+    .fullscreen-content h2 {
+      color: #006400;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    .fullscreen-chart-container {
+      height: 70vh;
+      position: relative;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #32CD32;
+      color: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s;
+      z-index: 10;
+    }
+
+    .close-btn:hover {
+      background: #228B22;
+    }
+
+    @media (max-width: 600px) {
+      input[type="text"] {
+        width: auto;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .fullscreen-modal {
+        padding: 20px;
+      }
+
+      .fullscreen-content {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Citywise Ecological Data Search</h1>
+  <form id="location-form">
+    <input type="text" id="city" placeholder="Enter city name" />
+    <button type="button" id="analyze">Generate Report</button>
+  </form>
+
+  <section id="report">
+    <div class="card">
+      <h2>Location Summary</h2>
+      <div id="locationMeta"></div>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="chart-card" data-chart="temp">
+        <h2>Temperature Trends (Next 7 Days)</h2>
+        <div class="chart-container">
+          <canvas id="tempChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card" data-chart="air">
+        <h2>Air Quality (PM2.5 & PM10)</h2>
+        <div class="chart-container">
+          <canvas id="airChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card" data-chart="uv">
+        <h2>Environmental Exposure Factors</h2>
+        <div class="chart-container">
+          <canvas id="uvChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card" data-chart="aqi">
+        <h2>Air Quality Index Trend</h2>
+        <div class="chart-container">
+          <canvas id="aqiChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fullscreen Modal -->
+  <div class="fullscreen-modal" id="fullscreenModal">
+    <div class="fullscreen-content">
+      <button class="close-btn" id="closeModal">×</button>
+      <h2 id="modalTitle"></h2>
+      <div class="fullscreen-chart-container">
+        <canvas id="fullscreenChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script src="src/assets/js/historical_data.js"></script>
+</body>
+</html>

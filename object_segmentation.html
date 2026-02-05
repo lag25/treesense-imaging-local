@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Green Cover Analysis System</title>
+<style>
+    body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+h2, h3 {
+  color: #333;
+  padding: 20px;
+}
+
+h3 {
+  display: flex;
+  align-items: center;
+}
+
+h4 {
+  color: #555;
+  padding-left: 20px;
+  margin-top: 30px;
+}
+
+input[type="file"] {
+  display: block;
+  margin: 20px;
+}
+
+input[type="number"], input[type="text"] {
+  padding: 8px;
+  margin: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+.image-container {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.image-container img {
+  max-width: calc(50% - 40px);
+  margin: 10px;
+}
+
+#green-cover-percentage, #idle-land-percentage {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2ecc71;
+}
+
+#idle-land-percentage {
+  color: #e74c3c;
+}
+
+.config-section {
+  background: white;
+  padding: 20px;
+  margin: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.config-section label {
+  display: inline-block;
+  width: 200px;
+  margin-right: 10px;
+}
+
+.metrics-section {
+  background: white;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.metric-card {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  border-left: 4px solid #4CAF50;
+}
+
+.metric-card h5 {
+  margin: 0 0 10px 0;
+  color: #666;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.metric-card .value {
+  font-size: 22px;
+  font-weight: bold;
+  color: #2ecc71;
+}
+
+.metric-card.warning {
+  border-left-color: #f39c12;
+}
+
+.metric-card.warning .value {
+  color: #f39c12;
+}
+
+.metric-card.danger {
+  border-left-color: #e74c3c;
+}
+
+.metric-card.danger .value {
+  color: #e74c3c;
+}
+
+.insights-section {
+  background: white;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.insights-section ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.insights-section li {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.insights-section li:before {
+  content: "• ";
+  color: #4CAF50;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.collapsible {
+  cursor: pointer;
+  padding: 15px;
+  background-color: #e8f5e9;
+  border: none;
+  text-align: left;
+  width: 100%;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.collapsible:hover {
+  background-color: #c8e6c9;
+}
+
+.collapsible:after {
+  content: '\002B';
+  color: #4CAF50;
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
+}
+
+.collapsible.active:after {
+  content: "\2212";
+}
+
+.content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+  background-color: #f9f9f9;
+  border-radius: 0 0 4px 4px;
+}
+
+.content-inner {
+  padding: 15px;
+}
+
+#detailed-report {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 4px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  font-size: 12px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+</style>
+</head>
+<body>
+
+<center><h2>Green Cover Analysis System</h2>
+
+<input type="file" id="image-file" accept="image/*">
+
+<div class="config-section">
+  <h4>Analysis Configuration (Optional)</h4>
+  <div>
+    <label for="area-size">Total Area (hectares):</label>
+    <input type="number" id="area-size" value="100" min="0.1" step="0.1">
+  </div>
+  <div style="margin-top: 10px;">
+    <label for="min-patch-size">Min Patch Size (pixels):</label>
+    <input type="number" id="min-patch-size" value="50" min="1">
+  </div>
+  <div style="margin-top: 10px;">
+    <label for="location-name">Location Name:</label>
+    <input type="text" id="location-name" placeholder="e.g., Ward 12, Mumbai">
+  </div>
+  <div style="margin-top: 10px;">
+    <label for="population">Population (optional):</label>
+    <input type="number" id="population" placeholder="For per-capita metrics">
+  </div>
+</div>
+
+<button onclick="processImage()">Process Image</button>
+</center>
+
+<h3>Processed Image:</h3>
+<div class="image-container">
+  <img id="uploaded-image" src="" alt="Uploaded Image">
+  <img id="processed-image" src="" alt="Processed Image">
+</div>
+
+<h4>Basic Metrics:</h4>
+<div class="metrics-section">
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <h5>Green Cover</h5>
+      <div class="value" id="green-cover-percentage">0%</div>
+    </div>
+    <div class="metric-card danger">
+      <h5>Idle Land</h5>
+      <div class="value" id="idle-land-percentage">0%</div>
+    </div>
+    <div class="metric-card">
+      <h5>Canopy Area</h5>
+      <div class="value" id="canopy-area">0 ha</div>
+    </div>
+    <div class="metric-card">
+      <h5>Patches</h5>
+      <div class="value" id="patch-count">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- Advanced Spatial Metrics (Collapsible) -->
+<div class="metrics-section">
+  <button class="collapsible">Spatial Metrics (Click to expand)</button>
+  <div class="content">
+    <div class="content-inner">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h5>Mean Patch Size</h5>
+          <div class="value" id="mean-patch-size">0 m²</div>
+        </div>
+        <div class="metric-card">
+          <h5>Largest Patch</h5>
+          <div class="value" id="largest-patch">0 m²</div>
+        </div>
+        <div class="metric-card">
+          <h5>Patch Density</h5>
+          <div class="value" id="patch-density">0 /ha</div>
+        </div>
+        <div class="metric-card">
+          <h5>Edge Density</h5>
+          <div class="value" id="edge-density">0 m/ha</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Fragmentation Metrics (Collapsible) -->
+<div class="metrics-section">
+  <button class="collapsible">Fragmentation Analysis (Click to expand)</button>
+  <div class="content">
+    <div class="content-inner">
+      <div class="metrics-grid">
+        <div class="metric-card" id="fragmentation-card">
+          <h5>Fragmentation Index</h5>
+          <div class="value" id="fragmentation-index">0</div>
+          <small>0 = continuous, 1 = fragmented</small>
+        </div>
+        <div class="metric-card">
+          <h5>Connectivity Index</h5>
+          <div class="value" id="connectivity-index">0</div>
+          <small>Landscape connectivity</small>
+        </div>
+        <div class="metric-card">
+          <h5>Shape Complexity</h5>
+          <div class="value" id="shape-complexity">0</div>
+          <small>Patch shape irregularity</small>
+        </div>
+        <div class="metric-card">
+          <h5>Isolation Metric</h5>
+          <div class="value" id="isolation-metric">0 m</div>
+          <small>Avg distance between patches</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Landscape Structure (Collapsible) -->
+<div class="metrics-section">
+  <button class="collapsible">Landscape Structure (Click to expand)</button>
+  <div class="content">
+    <div class="content-inner">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h5>Core Area</h5>
+          <div class="value" id="core-area-percent">0%</div>
+          <small>Protected from edge effects</small>
+        </div>
+        <div class="metric-card">
+          <h5>Landscape Diversity</h5>
+          <div class="value" id="landscape-diversity">0</div>
+          <small>Shannon diversity index</small>
+        </div>
+        <div class="metric-card">
+          <h5>Edge-to-Area Ratio</h5>
+          <div class="value" id="edge-area-ratio">0</div>
+          <small>Perimeter vs area</small>
+        </div>
+        <div class="metric-card">
+          <h5>Effective Mesh Size</h5>
+          <div class="value" id="mesh-size">0 m²</div>
+          <small>Landscape division</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Environmental Impact (Collapsible) -->
+<div class="metrics-section">
+  <button class="collapsible">Environmental Impact Estimates (Click to expand)</button>
+  <div class="content">
+    <div class="content-inner">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h5>Annual CO2 Sequestration</h5>
+          <div class="value" id="carbon-annual">0 tons</div>
+          <small>Rough estimate</small>
+        </div>
+        <div class="metric-card">
+          <h5>Equivalent Cars Offset</h5>
+          <div class="value" id="carbon-cars">0</div>
+          <small>Annual emissions</small>
+        </div>
+        <div class="metric-card">
+          <h5>Temperature Reduction</h5>
+          <div class="value" id="temp-reduction">0°C</div>
+          <small>Urban heat island effect</small>
+        </div>
+        <div class="metric-card">
+          <h5>Cooling Effect Area</h5>
+          <div class="value" id="cooling-area">0 ha</div>
+          <small>Extended cooling zone</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Insights and Recommendations -->
+<div class="insights-section">
+  <h4>Key Findings</h4>
+  <ul id="findings-list"></ul>
+</div>
+
+<div class="insights-section" style="background-color: #fff3cd; border-left: 4px solid #f39c12;">
+  <h4>Concerns</h4>
+  <ul id="concerns-list"></ul>
+</div>
+
+<div class="insights-section" style="background-color: #d1ecf1; border-left: 4px solid #0c5460;">
+  <h4>Recommendations</h4>
+  <ul id="recommendations-list"></ul>
+</div>
+
+<!-- Detailed Report (Collapsible) -->
+<div class="metrics-section">
+  <button class="collapsible">Detailed Technical Report (Click to expand)</button>
+  <div class="content">
+    <div class="content-inner">
+      <div id="detailed-report"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Methodology and Assumptions (Collapsible) -->
+<div class="metrics-section">
+  <button class="collapsible">Methodology & Assumptions (Click to expand)</button>
+  <div class="content">
+    <div class="content-inner">
+      <div style="background: #f8f9fa; padding: 20px; border-radius: 4px;">
+
+        <h4 style="color: #2ecc71; margin-top: 0;">How This Analysis Works</h4>
+        <p>This tool analyzes RGB satellite imagery to extract comprehensive landscape metrics from a simple vegetation mask (white = trees/vegetation, black = bare land). While we don't have multispectral data (like NDVI), spatial analysis alone reveals critical information about ecosystem health, fragmentation, and connectivity.</p>
+
+        <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+
+        <h4 style="color: #2ecc71;">Core Metrics Explained</h4>
+
+        <h5 style="margin-top: 20px;"><strong>1. Canopy Cover Percentage</strong></h5>
+        <p><strong>What it is:</strong> The percentage of ground area covered by tree canopy when viewed from above.</p>
+        <p><strong>How it's calculated:</strong> (Green pixels / Total pixels) × 100</p>
+        <p><strong>Why it matters:</strong></p>
+        <ul>
+          <li>Urban planning standard: Minimum 30% recommended for healthy cities</li>
+          <li>Climate impact: Each 1% increase can reduce surface temperature by 0.5-1°C</li>
+          <li>Air quality: More canopy = better pollution filtration</li>
+        </ul>
+        <p><strong>Assumptions:</strong> Assumes the segmentation mask accurately identifies all vegetation. Does not distinguish tree species or health.</p>
+
+        <h5 style="margin-top: 20px;"><strong>2. Patch Count & Patch Size</strong></h5>
+        <p><strong>What it is:</strong> Number of separate tree clusters (patches) and their individual sizes.</p>
+        <p><strong>How it's calculated:</strong> Uses 8-connected component analysis (flood fill algorithm) to identify contiguous vegetation areas. Filters out patches smaller than your specified minimum (default 50 pixels).</p>
+        <p><strong>Why it matters:</strong></p>
+        <ul>
+          <li>Large patches (>10,000 m²): Support diverse wildlife, birds, small mammals</li>
+          <li>Medium patches (1,000-10,000 m²): Limited habitat but valuable for connectivity</li>
+          <li>Small patches (<1,000 m²): Isolated trees, minimal ecosystem function</li>
+        </ul>
+        <p><strong>Assumptions:</strong> Pixel area calculated from total hectares / total pixels. Adjacent pixels are considered part of same patch (8-connectivity).</p>
+
+        <h5 style="margin-top: 20px;"><strong>3. Fragmentation Index (0-1)</strong></h5>
+        <p><strong>What it is:</strong> Measures how broken up the landscape is. 0 = one continuous forest, 1 = many tiny isolated patches.</p>
+        <p><strong>Formula:</strong> 1 - (Largest patch size / Total canopy area)</p>
+        <p><strong>Interpretation:</strong></p>
+        <ul>
+          <li><strong>&lt;0.3 (Low):</strong> Good connectivity, dominant large patch exists</li>
+          <li><strong>0.3-0.6 (Moderate):</strong> Some fragmentation, corridors could help</li>
+          <li><strong>&gt;0.6 (High):</strong> Severe fragmentation, priority intervention needed</li>
+        </ul>
+        <p><strong>Why it matters:</strong> Wildlife movement, genetic diversity, and ecosystem resilience all depend on connectivity. Highly fragmented landscapes isolate populations and reduce biodiversity.</p>
+        <p><strong>Assumptions:</strong> Based on landscape ecology principles (Forman & Godron, 1986). Assumes larger, connected patches are better for ecosystem function.</p>
+
+        <h5 style="margin-top: 20px;"><strong>4. Connectivity Index (0-1)</strong></h5>
+        <p><strong>What it is:</strong> How well patches are connected for wildlife and ecological processes.</p>
+        <p><strong>How it's calculated:</strong> Inverse of normalized patch density. Fewer patches = higher connectivity.</p>
+        <p><strong>Formula:</strong> max(0, 1 - (patch count / 100))</p>
+        <p><strong>Why it matters:</strong></p>
+        <ul>
+          <li>Animals need to move between patches for feeding, breeding, shelter</li>
+          <li>Plant seed dispersal depends on connectivity</li>
+          <li>Climate adaptation requires species to shift ranges</li>
+        </ul>
+        <p><strong>Assumptions:</strong> Normalized to 100 patches as reference. Does not account for actual barriers (roads, buildings) between patches.</p>
+
+        <h5 style="margin-top: 20px;"><strong>5. Patch Density (patches/hectare)</strong></h5>
+        <p><strong>What it is:</strong> Number of separate vegetation patches per hectare of land.</p>
+        <p><strong>Formula:</strong> Total patch count / Total area in hectares</p>
+        <p><strong>Interpretation:</strong></p>
+        <ul>
+          <li><strong>&lt;0.5:</strong> Large continuous areas (good for conservation)</li>
+          <li><strong>0.5-2:</strong> Moderate fragmentation (urban parks, suburbs)</li>
+          <li><strong>&gt;5:</strong> Highly fragmented (isolated street trees, small yards)</li>
+        </ul>
+        <p><strong>Assumptions:</strong> Higher density indicates more fragmentation, though context matters (urban vs forest).</p>
+
+        <h5 style="margin-top: 20px;"><strong>6. Edge Density (m/ha)</strong></h5>
+        <p><strong>What it is:</strong> Total length of vegetation edges per hectare.</p>
+        <p><strong>How it's calculated:</strong> For each patch, estimate perimeter as √(area) × 4 × 1.2 (irregular shape factor), sum all perimeters, divide by total hectares.</p>
+        <p><strong>Why it matters:</strong></p>
+        <ul>
+          <li>High edge density = patches exposed to external disturbances</li>
+          <li>Edge effects: wind, temperature changes, invasive species penetration</li>
+          <li>Core habitat (away from edges) is more valuable ecologically</li>
+        </ul>
+        <p><strong>Thresholds:</strong></p>
+        <ul>
+          <li>&lt;500 m/ha: Low edge effects, good core habitat</li>
+          <li>500-1000 m/ha: Moderate edges</li>
+          <li>&gt;1000 m/ha: High edges, vulnerable patches</li>
+        </ul>
+        <p><strong>Assumptions:</strong> Perimeter estimated from area (not exact but good approximation). Shape factor of 1.2 accounts for irregular boundaries.</p>
+
+        <h5 style="margin-top: 20px;"><strong>7. Shape Complexity</strong></h5>
+        <p><strong>What it is:</strong> How irregular and convoluted patch shapes are.</p>
+        <p><strong>Formula:</strong> Based on compactness ratio: (4π × Area) / Perimeter²</p>
+        <p><strong>Interpretation:</strong></p>
+        <ul>
+          <li><strong>~1:</strong> Circular/compact patches (good for core habitat)</li>
+          <li><strong>1-2:</strong> Moderately irregular (typical natural patches)</li>
+          <li><strong>&gt;2:</strong> Highly convoluted (more edge effects)</li>
+        </ul>
+        <p><strong>Why it matters:</strong> Compact patches have more core area relative to edge. Complex shapes increase edge exposure.</p>
+
+        <h5 style="margin-top: 20px;"><strong>8. Isolation Metric (meters)</strong></h5>
+        <p><strong>What it is:</strong> Average distance from each patch to its nearest neighboring patch.</p>
+        <p><strong>How it's calculated:</strong> For each patch, find centroid (center point), measure Euclidean distance to nearest other patch centroid, average all distances.</p>
+        <p><strong>Interpretation:</strong></p>
+        <ul>
+          <li><strong>&lt;50m:</strong> Good connectivity, stepping stones possible</li>
+          <li><strong>50-100m:</strong> Moderate isolation, corridors recommended</li>
+          <li><strong>&gt;100m:</strong> High isolation, significant barriers for wildlife</li>
+        </ul>
+        <p><strong>Why it matters:</strong> Most small birds won't cross gaps >50m. Small mammals rarely cross >100m open areas. Isolation prevents genetic exchange and recolonization after local extinctions.</p>
+        <p><strong>Assumptions:</strong> Uses patch centroids (not closest edge points). Straight-line distance (doesn't account for actual barriers).</p>
+
+        <h5 style="margin-top: 20px;"><strong>9. Core Area Percentage</strong></h5>
+        <p><strong>What it is:</strong> Percentage of canopy that is "core habitat" - interior areas buffered from edge effects.</p>
+        <p><strong>How it's calculated:</strong> For each vegetation pixel, check if all pixels within 2-pixel radius are also vegetation. If yes, it's core. Sum core pixels / total green pixels × 100.</p>
+        <p><strong>Why it matters:</strong></p>
+        <ul>
+          <li>Core habitat has stable microclimate, fewer invasive species, better for sensitive species</li>
+          <li>Edge habitat experiences temperature fluctuations, wind, predator access</li>
+          <li>Minimum 40-50% core area recommended for healthy populations</li>
+        </ul>
+        <p><strong>Assumptions:</strong> Uses 2-pixel edge depth (simplified). Real edge effects extend 10-100m depending on species and context.</p>
+
+        <h5 style="margin-top: 20px;"><strong>10. Landscape Diversity (Shannon Index)</strong></h5>
+        <p><strong>What it is:</strong> Measures the variety in patch sizes across the landscape.</p>
+        <p><strong>Formula:</strong> -Σ(p_i × ln(p_i)), where p_i is proportion of total area in patch i</p>
+        <p><strong>Interpretation:</strong></p>
+        <ul>
+          <li><strong>Low (&lt;1):</strong> Dominated by few large patches</li>
+          <li><strong>Medium (1-2):</strong> Mix of patch sizes</li>
+          <li><strong>High (&gt;2):</strong> Many patches of various sizes</li>
+        </ul>
+        <p><strong>Why it matters:</strong> Moderate diversity often best - provides both large core habitats and small stepping stones.</p>
+
+        <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+
+        <h4 style="color: #2ecc71;">Environmental Impact Estimates</h4>
+
+        <h5 style="margin-top: 20px;"><strong>Carbon Sequestration</strong></h5>
+        <p><strong>Formula:</strong> Canopy area (ha) × 2.5 tons CO2/ha/year</p>
+        <p><strong>Assumptions:</strong></p>
+        <ul>
+          <li>Based on typical urban tree carbon sequestration rates (Nowak et al., 2008)</li>
+          <li>Assumes mix of mature and young trees</li>
+          <li>Does NOT account for tree age, species, or health</li>
+          <li>Conservative estimate (actual can be 2-4 tons/ha/year)</li>
+        </ul>
+        <p><strong>Limitations:</strong> This is a ROUGH approximation. Actual carbon sequestration requires:</p>
+        <ul>
+          <li>Tree diameter measurements (DBH)</li>
+          <li>Species-specific allometric equations</li>
+          <li>Tree health assessment</li>
+          <li>Growth rate data</li>
+        </ul>
+
+        <h5 style="margin-top: 20px;"><strong>Temperature Reduction</strong></h5>
+        <p><strong>Formula:</strong> Canopy cover % × 0.7°C</p>
+        <p><strong>Basis:</strong> Research shows each 1% increase in tree canopy cover reduces surface temperature by 0.5-1°C (Akbari et al., 2001; Bowler et al., 2010).</p>
+        <p><strong>Cooling effect area:</strong> Canopy area × 1.5 (trees cool beyond their footprint through evapotranspiration)</p>
+        <p><strong>Assumptions:</strong></p>
+        <ul>
+          <li>Applies to urban areas during summer</li>
+          <li>Assumes healthy, leafy trees with good canopy density</li>
+          <li>Effect varies by climate, tree species, and urban form</li>
+        </ul>
+
+        <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+
+        <h4 style="color: #2ecc71;">Key Assumptions & Limitations</h4>
+
+        <h5 style="margin-top: 20px;"><strong>What This Analysis CAN Tell You:</strong></h5>
+        <ul>
+          <li>✓ Spatial distribution and pattern of vegetation</li>
+          <li>✓ Degree of landscape fragmentation</li>
+          <li>✓ Relative connectivity between patches</li>
+          <li>✓ Edge effects and core habitat availability</li>
+          <li>✓ Landscape structure metrics (patch size, density, etc.)</li>
+          <li>✓ Relative environmental benefits (comparative analysis)</li>
+        </ul>
+
+        <h5 style="margin-top: 20px;"><strong>What This Analysis CANNOT Tell You:</strong></h5>
+        <ul>
+          <li>✗ Tree species composition</li>
+          <li>✗ Tree health or vigor</li>
+          <li>✗ Tree height or biomass (requires LiDAR or stereo imagery)</li>
+          <li>✗ Exact carbon sequestration (requires field measurements)</li>
+          <li>✗ Vegetation type (trees vs shrubs vs grass)</li>
+          <li>✗ Seasonal variation (requires multi-date imagery)</li>
+          <li>✗ Precise age or growth stage</li>
+        </ul>
+
+        <h5 style="margin-top: 20px;"><strong>Critical Assumptions:</strong></h5>
+        <ol>
+          <li><strong>Mask Accuracy:</strong> All metrics depend on the quality of your vegetation segmentation. Misclassification will propagate through all calculations.</li>
+          <li><strong>Area Calibration:</strong> Pixel area is calculated by dividing total hectares by total pixels. Ensure your "Total Area" input is accurate.</li>
+          <li><strong>Spatial Resolution:</strong> Better imagery (higher resolution) gives more accurate patch detection. Low resolution may miss small patches or create artificial fragmentation.</li>
+          <li><strong>2D Analysis:</strong> This is a top-down view only. Doesn't account for vertical structure, understory vegetation, or terrain.</li>
+          <li><strong>Snapshot in Time:</strong> Single-date analysis. To detect change, you need to compare multiple dates.</li>
+          <li><strong>No Barrier Recognition:</strong> Isolation metrics use straight-line distance. Doesn't account for roads, rivers, or fences that may be actual barriers to wildlife.</li>
+          <li><strong>Edge Effect Simplification:</strong> Uses 2-pixel buffer for core area. Real edge effects vary greatly (10-100m) by species and context.</li>
+        </ol>
+
+        <h5 style="margin-top: 20px;"><strong>Best Practices for Use:</strong></h5>
+        <ul>
+          <li>✓ Compare relative differences (Area A vs Area B) rather than absolute values</li>
+          <li>✓ Use consistent settings across analyses for valid comparisons</li>
+          <li>✓ Ground-truth results with field visits when possible</li>
+          <li>✓ Cross-reference with other data sources (municipal tree inventories, biodiversity surveys)</li>
+          <li>✓ Consider local context (urban vs rural vs forest)</li>
+          <li>✓ Focus on trends over time rather than single-date values</li>
+        </ul>
+
+        <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+
+        <h4 style="color: #2ecc71;">References & Standards</h4>
+
+        <p><strong>Urban Canopy Standards:</strong></p>
+        <ul>
+          <li>30% canopy cover: American Forests recommendation for U.S. cities</li>
+          <li>40% canopy: Ideal for optimal ecosystem services in residential areas</li>
+          <li>WHO: Minimum 9 m² green space per capita</li>
+        </ul>
+
+        <p><strong>Fragmentation Metrics:</strong></p>
+        <ul>
+          <li>McGarigal, K. (2015). FRAGSTATS: Spatial Pattern Analysis Program</li>
+          <li>Forman, R.T.T. & Godron, M. (1986). Landscape Ecology</li>
+          <li>Taylor, P.D. et al. (1993). Connectivity is a vital element of landscape structure</li>
+        </ul>
+
+        <p><strong>Environmental Benefits:</strong></p>
+        <ul>
+          <li>Nowak, D.J. et al. (2008). "Tree and Forest Effects on Air Quality"</li>
+          <li>Akbari, H. et al. (2001). "Cool surfaces and shade trees to reduce energy use"</li>
+          <li>Bowler, D.E. et al. (2010). "Urban greening to cool towns and cities"</li>
+        </ul>
+
+        <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+
+        <h4 style="color: #2ecc71;">Technical Details</h4>
+
+        <p><strong>Algorithm:</strong> 8-connected component analysis (flood fill)</p>
+        <p><strong>Threshold:</strong> Grayscale value >127 = vegetation</p>
+        <p><strong>Minimum patch size:</strong> User-configurable (default 50 pixels) - filters noise</p>
+        <p><strong>Processing:</strong> Client-side JavaScript (all calculations in your browser)</p>
+        <p><strong>Data retention:</strong> No data is stored or transmitted (except to your segmentation API)</p>
+
+        <p style="margin-top: 30px; padding: 15px; background: #fff3cd; border-left: 4px solid #f39c12; border-radius: 4px;">
+          <strong>Important:</strong> This tool provides decision support, not prescriptive solutions. Always validate findings with local expertise, ground truth data, and additional sources. Use these metrics to guide planning decisions, identify priorities, and communicate landscape patterns to stakeholders.
+        </p>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer style="text-align: center; padding: 30px; background: #f8f9fa; margin-top: 20px; color: #666;">
+  <p><strong>Green Cover Analysis System</strong> | Advanced Spatial Metrics from RGB Imagery</p>
+  <p style="font-size: 12px; margin-top: 10px;">Based on landscape ecology principles and urban forestry standards</p>
+</footer>
+
+<script>
+// =============================================================================
+// GREEN COVER ANALYSIS MODULE (EMBEDDED)
+// =============================================================================
+
+const GreenCoverAnalysis = {
+  analyzeImage: function(maskImage, totalAreaHa, minPatchSize = 50) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = maskImage.width;
+    canvas.height = maskImage.height;
+    ctx.drawImage(maskImage, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const width = canvas.width;
+    const height = canvas.height;
+
+    const { mask, greenPixels, totalPixels } = this.createBinaryMask(imageData, width, height);
+
+    const canopyCoverPercent = (greenPixels / totalPixels) * 100;
+    const pixelArea = (totalAreaHa * 10000) / totalPixels;
+    const canopyAreaM2 = greenPixels * pixelArea;
+    const canopyAreaHa = canopyAreaM2 / 10000;
+
+    const patches = this.findConnectedComponents(mask, width, height, minPatchSize);
+    const spatialMetrics = this.calculateSpatialMetrics(patches, pixelArea, totalAreaHa);
+    const fragmentationMetrics = this.calculateFragmentationMetrics(patches, mask, width, height, pixelArea);
+    const landscapeMetrics = this.calculateLandscapeMetrics(patches, mask, width, height, pixelArea, totalAreaHa);
+    const insights = this.generateInsights(canopyCoverPercent, spatialMetrics, fragmentationMetrics, landscapeMetrics);
+
+    return {
+      basic: {
+        canopyCoverPercent,
+        bareLandPercent: 100 - canopyCoverPercent,
+        canopyAreaHa,
+        canopyAreaM2,
+        totalAreaHa,
+        patchCount: patches.length
+      },
+      spatial: spatialMetrics,
+      fragmentation: fragmentationMetrics,
+      landscape: landscapeMetrics,
+      insights: insights,
+      rawData: { patches, mask, width, height, pixelArea }
+    };
+  },
+
+  createBinaryMask: function(imageData, width, height) {
+    const mask = new Uint8Array(width * height);
+    let greenPixels = 0;
+
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      const idx = i / 4;
+      if (imageData.data[i] > 127) {
+        mask[idx] = 1;
+        greenPixels++;
+      }
+    }
+
+    return { mask, greenPixels, totalPixels: width * height };
+  },
+
+  findConnectedComponents: function(mask, width, height, minSize) {
+    const visited = new Uint8Array(width * height);
+    const patches = [];
+
+    const floodFill = (startIdx) => {
+      const stack = [startIdx];
+      const pixels = [];
+
+      while (stack.length > 0) {
+        const idx = stack.pop();
+        if (visited[idx] || !mask[idx]) continue;
+
+        visited[idx] = 1;
+        pixels.push(idx);
+
+        const x = idx % width;
+        const y = Math.floor(idx / width);
+
+        const neighbors = [[-1,-1], [0,-1], [1,-1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
+
+        for (const [dx, dy] of neighbors) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+            stack.push(ny * width + nx);
+          }
+        }
+      }
+
+      return pixels;
+    };
+
+    for (let i = 0; i < mask.length; i++) {
+      if (mask[i] && !visited[i]) {
+        const pixels = floodFill(i);
+        if (pixels.length >= minSize) {
+          patches.push(pixels);
+        }
+      }
+    }
+
+    return patches;
+  },
+
+  calculateSpatialMetrics: function(patches, pixelArea, totalAreaHa) {
+    if (patches.length === 0) {
+      return {
+        meanPatchSize: 0, medianPatchSize: 0, largestPatch: 0, smallestPatch: 0,
+        patchDensity: 0, edgeDensity: 0, totalEdgeLength: 0, patchSizeStdDev: 0
+      };
+    }
+
+    const patchSizes = patches.map(p => p.length * pixelArea);
+    patchSizes.sort((a, b) => a - b);
+
+    const meanPatchSize = patchSizes.reduce((a, b) => a + b, 0) / patches.length;
+    const medianPatchSize = patchSizes[Math.floor(patchSizes.length / 2)];
+    const largestPatch = Math.max(...patchSizes);
+    const smallestPatch = Math.min(...patchSizes);
+    const patchDensity = patches.length / totalAreaHa;
+
+    const variance = patchSizes.reduce((sum, size) => sum + Math.pow(size - meanPatchSize, 2), 0) / patchSizes.length;
+    const patchSizeStdDev = Math.sqrt(variance);
+
+    let totalEdge = 0;
+    for (const patch of patches) {
+      const area = patch.length * pixelArea;
+      totalEdge += Math.sqrt(area) * 4 * 1.2;
+    }
+    const edgeDensity = totalEdge / (totalAreaHa * 10000);
+
+    return {
+      meanPatchSize, medianPatchSize, largestPatch, smallestPatch, patchDensity,
+      edgeDensity: edgeDensity * 10000, totalEdgeLength: totalEdge, patchSizeStdDev,
+      patchSizeDistribution: patchSizes
+    };
+  },
+
+  calculateFragmentationMetrics: function(patches, mask, width, height, pixelArea) {
+    if (patches.length === 0) {
+      return {
+        fragmentationIndex: 1, connectivityIndex: 0, shapeComplexity: 1,
+        isolationMetric: 0, largestPatchIndex: 0, cohesionIndex: 0
+      };
+    }
+
+    const patchSizes = patches.map(p => p.length);
+    const totalGreen = patchSizes.reduce((a, b) => a + b, 0);
+    const largestPatchSize = Math.max(...patchSizes);
+
+    const largestPatchIndex = largestPatchSize / totalGreen;
+    const fragmentationIndex = 1 - largestPatchIndex;
+
+    const maxPatches = 100;
+    const connectivityIndex = Math.max(0, 1 - (patches.length / maxPatches));
+
+    let totalShapeComplexity = 0;
+    for (const patch of patches) {
+      const area = patch.length;
+      const perimeterEst = Math.sqrt(area) * 4;
+      const compactness = (4 * Math.PI * area) / (perimeterEst * perimeterEst);
+      totalShapeComplexity += 1 / (compactness + 0.001);
+    }
+    const shapeComplexity = totalShapeComplexity / patches.length;
+
+    let totalNNDist = 0;
+    for (let i = 0; i < patches.length; i++) {
+      const centroid1 = this.getCentroid(patches[i], width);
+      let minDist = Infinity;
+
+      for (let j = 0; j < patches.length; j++) {
+        if (i === j) continue;
+        const centroid2 = this.getCentroid(patches[j], width);
+        const dist = Math.sqrt(
+          Math.pow(centroid1.x - centroid2.x, 2) +
+          Math.pow(centroid1.y - centroid2.y, 2)
+        );
+        minDist = Math.min(minDist, dist);
+      }
+
+      totalNNDist += minDist === Infinity ? 0 : minDist;
+    }
+    const isolationMetric = (totalNNDist / patches.length) * Math.sqrt(pixelArea);
+
+    let cohesion = 0;
+    if (patches.length > 1) {
+      for (const patch of patches) {
+        const perimeterEst = Math.sqrt(patch.length) * 4;
+        cohesion += perimeterEst / patch.length;
+      }
+      cohesion = 1 - (cohesion / patches.length);
+    }
+
+    return {
+      fragmentationIndex, connectivityIndex, shapeComplexity,
+      isolationMetric, largestPatchIndex, cohesionIndex: Math.max(0, cohesion)
+    };
+  },
+
+  calculateLandscapeMetrics: function(patches, mask, width, height, pixelArea, totalAreaHa) {
+    if (patches.length === 0) {
+      return {
+        landscapeDiversity: 0, edgeToAreaRatio: 0,
+        coreAreaTotal: 0, coreAreaPercent: 0, effectiveMeshSize: 0
+      };
+    }
+
+    const patchSizes = patches.map(p => p.length);
+    const totalArea = patchSizes.reduce((a, b) => a + b, 0);
+    const proportions = patchSizes.map(size => size / totalArea);
+    const landscapeDiversity = -proportions.reduce((sum, p) => sum + (p > 0 ? p * Math.log(p) : 0), 0);
+
+    let totalPerimeter = 0;
+    for (const patch of patches) {
+      totalPerimeter += Math.sqrt(patch.length) * 4;
+    }
+    const edgeToAreaRatio = totalPerimeter / totalArea;
+
+    let corePixels = 0;
+    const edgeDepth = 2;
+
+    for (const patch of patches) {
+      for (const idx of patch) {
+        const x = idx % width;
+        const y = Math.floor(idx / width);
+
+        let isCore = true;
+        for (let dy = -edgeDepth; dy <= edgeDepth && isCore; dy++) {
+          for (let dx = -edgeDepth; dx <= edgeDepth && isCore; dx++) {
+            const nx = x + dx;
+            const ny = y + dy;
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+              if (!mask[ny * width + nx]) {
+                isCore = false;
+              }
+            }
+          }
+        }
+
+        if (isCore) corePixels++;
+      }
+    }
+
+    const coreAreaTotal = corePixels * pixelArea;
+    const coreAreaPercent = (corePixels / totalArea) * 100;
+
+    const landscapeArea = totalAreaHa * 10000;
+    let meshSum = 0;
+    for (const size of patchSizes) {
+      meshSum += Math.pow(size * pixelArea, 2);
+    }
+    const effectiveMeshSize = meshSum / landscapeArea;
+
+    return { landscapeDiversity, edgeToAreaRatio, coreAreaTotal, coreAreaPercent, effectiveMeshSize };
+  },
+
+  getCentroid: function(patch, width) {
+    let sumX = 0, sumY = 0;
+    for (const idx of patch) {
+      sumX += idx % width;
+      sumY += Math.floor(idx / width);
+    }
+    return { x: sumX / patch.length, y: sumY / patch.length };
+  },
+
+  generateInsights: function(canopyCoverPercent, spatialMetrics, fragmentationMetrics, landscapeMetrics) {
+    const insights = { findings: [], concerns: [], recommendations: [], rating: 'good' };
+
+    insights.findings.push(`Tree canopy covers ${canopyCoverPercent.toFixed(1)}% of the total area`);
+    insights.findings.push(`${spatialMetrics.patchDensity.toFixed(1)} patches per hectare detected`);
+
+    if (fragmentationMetrics.fragmentationIndex < 0.3) {
+      insights.findings.push(`Low fragmentation - well-connected landscape`);
+    } else if (fragmentationMetrics.fragmentationIndex < 0.6) {
+      insights.findings.push(`Moderate fragmentation - some connectivity exists`);
+    } else {
+      insights.findings.push(`High fragmentation - landscape is highly divided`);
+    }
+
+    if (landscapeMetrics.coreAreaPercent > 50) {
+      insights.findings.push(`${landscapeMetrics.coreAreaPercent.toFixed(1)}% of canopy is core habitat`);
+    }
+
+    if (canopyCoverPercent < 20) {
+      insights.concerns.push(`Canopy cover below 20% - well below recommended 30% for urban areas`);
+      insights.rating = 'poor';
+    } else if (canopyCoverPercent < 30) {
+      insights.concerns.push(`Canopy cover below recommended 30% for urban areas`);
+      insights.rating = 'fair';
+    }
+
+    if (fragmentationMetrics.fragmentationIndex > 0.6) {
+      insights.concerns.push(`High fragmentation limits ecological connectivity`);
+      insights.rating = insights.rating === 'poor' ? 'poor' : 'fair';
+    }
+
+    if (spatialMetrics.edgeDensity > 1000) {
+      insights.concerns.push(`High edge density (${Math.round(spatialMetrics.edgeDensity)} m/ha)`);
+    }
+
+    if (spatialMetrics.meanPatchSize < 500) {
+      insights.concerns.push(`Small average patch size (${Math.round(spatialMetrics.meanPatchSize)} m²)`);
+    }
+
+    if (fragmentationMetrics.isolationMetric > 100) {
+      insights.concerns.push(`High isolation (avg ${Math.round(fragmentationMetrics.isolationMetric)}m)`);
+    }
+
+    if (landscapeMetrics.coreAreaPercent < 30) {
+      insights.concerns.push(`Low core area (${landscapeMetrics.coreAreaPercent.toFixed(1)}%)`);
+    }
+
+    if (canopyCoverPercent < 30) {
+      insights.recommendations.push(`Increase canopy cover to 30% through tree planting programs`);
+    }
+
+    if (fragmentationMetrics.fragmentationIndex > 0.5) {
+      insights.recommendations.push(`Create green corridors to connect isolated patches`);
+    }
+
+    if (fragmentationMetrics.isolationMetric > 100) {
+      insights.recommendations.push(`Establish stepping-stone patches (target <100m spacing)`);
+    }
+
+    if (spatialMetrics.meanPatchSize < 1000) {
+      insights.recommendations.push(`Focus on expanding existing patches`);
+    }
+
+    if (landscapeMetrics.coreAreaPercent < 40) {
+      insights.recommendations.push(`Increase patch sizes to create more core habitat`);
+    }
+
+    insights.recommendations.push(`Protect ${Math.round(spatialMetrics.largestPatch)} m² largest patch`);
+
+    if (insights.rating === 'good' && insights.concerns.length === 0) {
+      insights.recommendations.push(`Maintain current canopy through monitoring`);
+    }
+
+    return insights;
+  },
+
+  generateReport: function(analysisResults) {
+    const { basic, spatial, fragmentation, landscape, insights } = analysisResults;
+
+    return {
+      summary: `
+Green Cover Analysis Report
+===========================
+
+BASIC METRICS:
+- Canopy Cover: ${basic.canopyCoverPercent.toFixed(1)}%
+- Total Canopy Area: ${basic.canopyAreaHa.toFixed(2)} hectares
+- Number of Patches: ${basic.patchCount}
+
+SPATIAL METRICS:
+- Mean Patch Size: ${spatial.meanPatchSize.toFixed(0)} m²
+- Largest Patch: ${spatial.largestPatch.toFixed(0)} m²
+- Patch Density: ${spatial.patchDensity.toFixed(2)} patches/ha
+- Edge Density: ${spatial.edgeDensity.toFixed(0)} m/ha
+
+FRAGMENTATION:
+- Fragmentation Index: ${fragmentation.fragmentationIndex.toFixed(2)} (${
+  fragmentation.fragmentationIndex < 0.3 ? 'Low' :
+  fragmentation.fragmentationIndex < 0.6 ? 'Moderate' : 'High'
+})
+- Connectivity Index: ${fragmentation.connectivityIndex.toFixed(2)}
+- Isolation Metric: ${fragmentation.isolationMetric.toFixed(0)} meters
+
+LANDSCAPE STRUCTURE:
+- Core Area: ${landscape.coreAreaPercent.toFixed(1)}% of canopy
+- Landscape Diversity: ${landscape.landscapeDiversity.toFixed(2)}
+- Edge-to-Area Ratio: ${landscape.edgeToAreaRatio.toFixed(3)}
+
+OVERALL RATING: ${insights.rating.toUpperCase()}
+
+KEY CONCERNS: ${insights.concerns.length > 0 ? insights.concerns.join('; ') : 'None'}
+
+RECOMMENDATIONS: ${insights.recommendations.join('; ')}
+      `.trim()
+    };
+  },
+
+  estimateCarbonSequestration: function(canopyAreaHa) {
+    const annualSequestration = canopyAreaHa * 2.5;
+    return {
+      annualTonsCO2: annualSequestration,
+      twentyYearTotal: annualSequestration * 20,
+      equivalentCars: Math.round(annualSequestration / 4.6),
+      note: 'Rough estimate based on typical urban tree sequestration'
+    };
+  },
+
+  estimateHeatMitigation: function(canopyAreaHa, canopyCoverPercent) {
+    const tempReductionC = canopyCoverPercent * 0.7;
+    const coolingAreaHa = canopyAreaHa * 1.5;
+    return {
+      estimatedTempReduction: tempReductionC.toFixed(1),
+      coolingEffectArea: coolingAreaHa.toFixed(1),
+      note: 'Estimates based on typical urban canopy cooling'
+    };
+  },
+
+  calculateGreenEquity: function(canopyAreaHa, populationCount) {
+    if (!populationCount || populationCount === 0) {
+      return { canopyPerCapita: 0, note: 'Population data required' };
+    }
+
+    const canopyPerCapitaM2 = (canopyAreaHa * 10000) / populationCount;
+    const vsWHOStandard = canopyPerCapitaM2 / 9;
+
+    return {
+      canopyPerCapitaM2: canopyPerCapitaM2.toFixed(1),
+      vsWHOStandard: vsWHOStandard.toFixed(2),
+      assessment: vsWHOStandard >= 1 ? 'Meets WHO standard' :
+                  vsWHOStandard >= 0.5 ? 'Below WHO standard' :
+                  'Significantly below WHO standard'
+    };
+  }
+};
+
+// =============================================================================
+// MAIN APPLICATION CODE
+// =============================================================================
+
+async function processImage() {
+  const fileInput = document.getElementById('image-file');
+  const file = fileInput.files[0];
+
+  if (!file) {
+    alert("Please select an image first");
+    return;
+  }
+
+  const uploadedImage = document.getElementById('uploaded-image');
+  const processedImage = document.getElementById('processed-image');
+
+  uploadedImage.src = URL.createObjectURL(file);
+
+  const areaSize = parseFloat(document.getElementById('area-size').value);
+  const minPatchSize = parseInt(document.getElementById('min-patch-size').value);
+  const locationName = document.getElementById('location-name').value;
+  const population = parseInt(document.getElementById('population').value) || 0;
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch("http://localhost:8000/segment", {
+    method: "POST",
+    body: formData
+  });
+
+  const blob = await response.blob();
+  const maskUrl = URL.createObjectURL(blob);
+  processedImage.src = maskUrl;
+
+  const img = new Image();
+  img.onload = () => {
+    const results = GreenCoverAnalysis.analyzeImage(img, areaSize, minPatchSize);
+    updateUI(results, population, locationName);
+  };
+
+  img.src = maskUrl;
+}
+
+function updateUI(results, population, locationName) {
+  const { basic, spatial, fragmentation, landscape, insights } = results;
+
+  document.getElementById('green-cover-percentage').textContent = basic.canopyCoverPercent.toFixed(2) + '%';
+  document.getElementById('idle-land-percentage').textContent = basic.bareLandPercent.toFixed(2) + '%';
+  document.getElementById('canopy-area').textContent = basic.canopyAreaHa.toFixed(2) + ' ha';
+  document.getElementById('patch-count').textContent = basic.patchCount;
+
+  document.getElementById('mean-patch-size').textContent = spatial.meanPatchSize.toFixed(0) + ' m²';
+  document.getElementById('largest-patch').textContent = spatial.largestPatch.toFixed(0) + ' m²';
+  document.getElementById('patch-density').textContent = spatial.patchDensity.toFixed(2) + ' /ha';
+  document.getElementById('edge-density').textContent = spatial.edgeDensity.toFixed(0) + ' m/ha';
+
+  document.getElementById('fragmentation-index').textContent = fragmentation.fragmentationIndex.toFixed(2);
+  document.getElementById('connectivity-index').textContent = fragmentation.connectivityIndex.toFixed(2);
+  document.getElementById('shape-complexity').textContent = fragmentation.shapeComplexity.toFixed(2);
+  document.getElementById('isolation-metric').textContent = fragmentation.isolationMetric.toFixed(0) + ' m';
+
+  const fragCard = document.getElementById('fragmentation-card');
+  if (fragmentation.fragmentationIndex < 0.3) {
+    fragCard.className = 'metric-card';
+  } else if (fragmentation.fragmentationIndex < 0.6) {
+    fragCard.className = 'metric-card warning';
+  } else {
+    fragCard.className = 'metric-card danger';
+  }
+
+  document.getElementById('core-area-percent').textContent = landscape.coreAreaPercent.toFixed(1) + '%';
+  document.getElementById('landscape-diversity').textContent = landscape.landscapeDiversity.toFixed(2);
+  document.getElementById('edge-area-ratio').textContent = landscape.edgeToAreaRatio.toFixed(3);
+  document.getElementById('mesh-size').textContent = landscape.effectiveMeshSize.toFixed(0) + ' m²';
+
+  const carbon = GreenCoverAnalysis.estimateCarbonSequestration(basic.canopyAreaHa);
+  const heat = GreenCoverAnalysis.estimateHeatMitigation(basic.canopyAreaHa, basic.canopyCoverPercent);
+
+  document.getElementById('carbon-annual').textContent = carbon.annualTonsCO2.toFixed(1) + ' tons';
+  document.getElementById('carbon-cars').textContent = carbon.equivalentCars;
+  document.getElementById('temp-reduction').textContent = heat.estimatedTempReduction + '°C';
+  document.getElementById('cooling-area').textContent = heat.coolingEffectArea + ' ha';
+
+  if (population > 0) {
+    const equity = GreenCoverAnalysis.calculateGreenEquity(basic.canopyAreaHa, population);
+    insights.findings.push(`${equity.canopyPerCapitaM2} m² per capita (${equity.assessment})`);
+  }
+
+  const findingsList = document.getElementById('findings-list');
+  findingsList.innerHTML = insights.findings.map(f => `<li>${f}</li>`).join('');
+
+  const concernsList = document.getElementById('concerns-list');
+  if (insights.concerns.length > 0) {
+    concernsList.innerHTML = insights.concerns.map(c => `<li>${c}</li>`).join('');
+  } else {
+    concernsList.innerHTML = '<li style="color: #2ecc71;">No major concerns identified!</li>';
+  }
+
+  const recommendationsList = document.getElementById('recommendations-list');
+  recommendationsList.innerHTML = insights.recommendations.map(r => `<li>${r}</li>`).join('');
+
+  const report = GreenCoverAnalysis.generateReport(results);
+  const reportWithLocation = locationName ? `Location: ${locationName}\n${report.summary}` : report.summary;
+  document.getElementById('detailed-report').textContent = reportWithLocation;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const collapsibles = document.getElementsByClassName("collapsible");
+
+  for (let i = 0; i < collapsibles.length; i++) {
+    collapsibles[i].addEventListener("click", function() {
+      this.classList.toggle("active");
+      const content = this.nextElementSibling;
+      if (content.style.maxHeight) {
+        content.style.maxHeight = null;
+      } else {
+        content.style.maxHeight = content.scrollHeight + "px";
+      }
+    });
+  }
+});
+</script>
+
+</body>
+</html>
